@@ -1,30 +1,30 @@
-const redis = require('redis');
+// const redis = require('redis');
+const { createClient } = require('redis');
 
-const REDIS_PORT= process.env.REDIS_PORT||6379
-const client = redis.createClient(REDIS_PORT);
+const client = createClient({
+    password: process.env.redis_password,
+    socket: {
+        host: process.env.redis_host,
+        port: process.env.redis_port
+    }
+});
+
+(async () => {
+
+    client.on("error", (error) => console.error(`Error : ${error}`));
+
+    await client.connect();
+})();
 
 
-const redisMiddleware = (req, res, next) => {
-    (async () => { 
-        console.log(client.isOpen);
-        await client.connect(); 
-        console.log(client);
-    })(); 
-    const cacheKey = "cache"; 
-    client.get(cacheKey, (err, data) => {
-        console.log(data);
-        if (err) {
-            console.error('Error retrieving data from cache:', err);
-            next();
-            return;
-        }
+const redisMiddleware = async (req, res, next) => {
+    const data = await client.get("cache")
+    if (data) {
+        await res.send(JSON.parse(data));
+    } else {
+        next();
+    }
 
-        if (data !== null) {
-            res.send(JSON.parse(data));
-        } else {
-            next();
-        }
-    });
 };
 
 module.exports = { redisMiddleware, client };
