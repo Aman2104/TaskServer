@@ -1,5 +1,5 @@
 const pool = require('../config').pool;
-class Submission {
+class SubmissionModel {
   static submit(username, codeLanguage, stdin, sourceCode) {
     
     return new Promise((resolve, reject) => {
@@ -31,4 +31,4 @@ class Submission {
   }
 }
 
-module.exports = Submission;
+module.exports = SubmissionModel;
